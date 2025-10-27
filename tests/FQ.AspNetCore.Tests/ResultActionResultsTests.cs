@@ -34,13 +34,14 @@ public class ResultActionResultsTests
         var res = Result<string>.Fail(Error.Validation("name", "Required"));
         var ar = res.ToActionResult(ctrl);
 
-        var obj = Assert.IsType<ObjectResult>(ar.Result);
+        var obj = Assert.IsType<ObjectResult>(ar);
         obj.StatusCode.Should().Be(400);
 
         var problem = Assert.IsType<ProblemDetails>(obj.Value);
         problem.Type.Should().Contain("validation");
         problem.Extensions.Should().ContainKey("correlationId");
         problem.Extensions["correlationId"].Should().Be("CID-123");
+        problem.Extensions.Should().ContainKey("errors");
     }
 
     [Fact]

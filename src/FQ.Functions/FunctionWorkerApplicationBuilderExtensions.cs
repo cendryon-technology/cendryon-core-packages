@@ -8,7 +8,7 @@ public static class FunctionWorkerApplicationBuilderExtensions
     public static IFunctionsWorkerApplicationBuilder UseFunctionsUtilities(
         this IFunctionsWorkerApplicationBuilder builder)
     {
-        builder.UseMiddleware<CorrelationIdMiddleware>();
+        builder.UseMiddleware<CorrelationMiddleware>();
         builder.UseMiddleware<IdempotencyMiddleware>();   
         builder.UseMiddleware<FunctionExceptionMiddleware>();
 

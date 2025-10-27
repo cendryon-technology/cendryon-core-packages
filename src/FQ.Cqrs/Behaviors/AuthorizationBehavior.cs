@@ -11,23 +11,23 @@ public sealed class AuthorizationBehavior<TRequest> : IPipelineBehavior<TRequest
 {
     private readonly IEnumerable<IAuthorizer<TRequest>> _authorizers;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthorizationBehavior{TRequest}"/> class.
+    /// </summary>
+    /// <param name="authorizers">The authorizers applicable to <typeparamref name="TRequest"/>.</param>
     public AuthorizationBehavior(IEnumerable<IAuthorizer<TRequest>> authorizers)
-        => _authorizers = authorizers ?? [];
+        => _authorizers = authorizers;
 
-    public async Task<Result> Handle(TRequest request,
-        RequestHandlerDelegate<Result> next,
-        CancellationToken ct)
+    /// <inheritdoc/>
+    public async Task<Result> Handle(TRequest request, RequestHandlerDelegate<Result> next, CancellationToken ct)
     {
-        foreach (var auth in _authorizers)
+        foreach (var a in _authorizers)
         {
-            var decision = await auth.AuthorizeAsync(request, ct).ConfigureAwait(false);
-            if (!decision.IsSuccess)
-            {
-                return decision;
-            } 
+            var res = await a.AuthorizeAsync(request, ct);
+            if (!res.IsSuccess) return res;
         }
-
-        return await next(ct).ConfigureAwait(false);
+        
+        return await next(ct);
     }
 }
 
@@ -40,20 +40,22 @@ public sealed class AuthorizationBehavior<TRequest, TResponse> : IPipelineBehavi
 {
     private readonly IEnumerable<IAuthorizer<TRequest>> _authorizers;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AuthorizationBehavior{TRequest, TResponse}"/> class.
+    /// </summary>
+    /// <param name="authorizers">The authorizers applicable to <typeparamref name="TRequest"/>.</param>
     public AuthorizationBehavior(IEnumerable<IAuthorizer<TRequest>> authorizers)
-        => _authorizers = authorizers ?? [];
+        => _authorizers = authorizers;
 
-    public async Task<Result<TResponse>> Handle(TRequest request,
-        RequestHandlerDelegate<Result<TResponse>> next,
-        CancellationToken ct)
+    /// <inheritdoc/>
+    public async Task<Result<TResponse>> Handle(TRequest request, RequestHandlerDelegate<Result<TResponse>> next, CancellationToken ct)
     {
-        foreach (var auth in _authorizers)
+        foreach (var a in _authorizers)
         {
-            var decision = await auth.AuthorizeAsync(request, ct).ConfigureAwait(false);
-            if (!decision.IsSuccess)
-                return Result<TResponse>.Fail(decision.Error!);
+            var res = await a.AuthorizeAsync(request, ct);
+            if (!res.IsSuccess) return Result<TResponse>.Fail(res.Error!);
         }
-
-        return await next(ct).ConfigureAwait(false);
+        
+        return await next(ct);
     }
 }

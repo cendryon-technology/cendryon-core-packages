@@ -1,35 +1,36 @@
 using System.Text.Json;
-using FQ.Results;
 
 namespace FQ.Cqrs;
 
 internal static class JsonSerializerExtensions
 {
-    public static bool TryDeserializeResultFromJson(this string json, out Result result, JsonSerializerOptions? options = null)
-    {
-        return HandleDeserialization(() => JsonResultSerializer.Deserialize(json, options), out result);
-    }
-    
-    public static bool TryDeserializeResultFromJson(this byte[] jsonBytes, out Result result, JsonSerializerOptions? options = null)
-    {
-        return HandleDeserialization(() => JsonResultSerializer.Deserialize(jsonBytes, options), out result);
-    }
-    
-    public static bool TryDeserializeResultFromJson<TResponse>(this string json, out Result<TResponse> result, JsonSerializerOptions? options = null)
-    {
-        return HandleDeserialization(() => JsonResultSerializer.Deserialize<TResponse>(json, options), out result);
-    }
-    
-    public static bool TryDeserializeResultFromJson<TResponse>(this byte[] jsonBytes, out Result<TResponse> result, JsonSerializerOptions? options = null)
-    {
-        return HandleDeserialization(() => JsonResultSerializer.Deserialize<TResponse>(jsonBytes, options), out result);
-    }
-
-    private static bool HandleDeserialization<TResponse>(Func<TResponse> deserializationAction, out TResponse? result)
+    public static bool TryDeserializeFromJson<TResponse>(this string json, out TResponse? result, JsonSerializerOptions? options = null)
     {
         try
         {
-            result = deserializationAction();
+            result = JsonSerializer.Deserialize<TResponse>(json, options);
+
+            return true;
+        }
+        catch (JsonException)
+        {
+            result = default;
+
+            return false;
+        }
+        catch (NotSupportedException)
+        {
+            result = default;
+
+            return false;
+        }
+    }
+    
+    public static bool TryDeserializeFromJson<TResponse>(this byte[] jsonBytes, out TResponse? result, JsonSerializerOptions? options = null)
+    {
+        try
+        {
+            result = JsonSerializer.Deserialize<TResponse>(jsonBytes, options);
 
             return true;
         }

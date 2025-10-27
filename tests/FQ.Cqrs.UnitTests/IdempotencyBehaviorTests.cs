@@ -17,7 +17,6 @@ public class IdempotencyBehaviorTests
     public async Task Should_Return_Cached_Generic_Result_When_Found()
     {
         var keyAccessor = Substitute.For<IIdempotencyKeyAccessor>();
-        
         keyAccessor.GetKey().Returns("KEY1");
 
         var store = Substitute.For<IIdempotencyStore>();
@@ -25,16 +24,15 @@ public class IdempotencyBehaviorTests
 
         var expected = Result<Guid>.Ok(Guid.NewGuid());
         var payload = JsonSerializer.SerializeToUtf8Bytes(expected, TestHelpers.Json);
-        
         store.TryGetAsync("KEY1", typeof(MakePayment).FullName!, Arg.Any<CancellationToken>())!
             .Returns(Task.FromResult((true, payload, "application/json")));
 
         var behavior = new IdempotencyBehavior<MakePayment, Guid>(keyAccessor, store, options);
+
         var res = await behavior.Handle(new MakePayment(10), TestHelpers.NextOk(Guid.NewGuid()), default);
 
         res.IsSuccess.Should().BeTrue();
         res.Value.Should().Be(expected.Value);
-        
         await store.DidNotReceive().SetAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<byte[]>(), Arg.Any<string?>(), Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>());
     }
 
@@ -42,11 +40,9 @@ public class IdempotencyBehaviorTests
     public async Task Should_Store_Result_When_Not_Found()
     {
         var keyAccessor = Substitute.For<IIdempotencyKeyAccessor>();
-        
         keyAccessor.GetKey().Returns("KEY2");
 
         var store = Substitute.For<IIdempotencyStore>();
-        
         store.TryGetAsync("KEY2", typeof(MakePayment).FullName!, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((false, null as byte[], null as string)));
 
@@ -56,7 +52,6 @@ public class IdempotencyBehaviorTests
         var res = await behavior.Handle(new MakePayment(25), TestHelpers.NextOk(id), default);
 
         res.IsSuccess.Should().BeTrue();
-        
         await store.Received(1).SetAsync("KEY2", typeof(MakePayment).FullName!,
             Arg.Any<byte[]>(), "application/json", TimeSpan.FromMinutes(5), Arg.Any<CancellationToken>());
     }
@@ -65,11 +60,9 @@ public class IdempotencyBehaviorTests
     public async Task Nongeneric_Should_Work_Same_Way()
     {
         var keyAccessor = Substitute.For<IIdempotencyKeyAccessor>();
-        
         keyAccessor.GetKey().Returns("K");
 
         var store = Substitute.For<IIdempotencyStore>();
-        
         store.TryGetAsync("K", typeof(DoSomething).FullName!, Arg.Any<CancellationToken>())
             .Returns(Task.FromResult((false, null as byte[], null as string)));
 
@@ -78,7 +71,6 @@ public class IdempotencyBehaviorTests
         var res = await behavior.Handle(new DoSomething(), TestHelpers.NextOk(), default);
 
         res.IsSuccess.Should().BeTrue();
-        
         await store.Received(1).SetAsync("K", typeof(DoSomething).FullName!, Arg.Any<byte[]>(),
             "application/json", TimeSpan.FromHours(24), Arg.Any<CancellationToken>());
     }

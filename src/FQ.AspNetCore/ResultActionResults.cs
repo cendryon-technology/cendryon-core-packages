@@ -9,13 +9,8 @@ public static class ResultActionResults
 {
     public static IActionResult ToActionResult(this Result result, ControllerBase controller)
     {
-        if (result.IsSuccess)
-        {
-            return controller.NoContent();
-        }
-        
+        if (result.IsSuccess) return controller.NoContent();
         var p = result.ToProblemShape(controller.Request?.Path.Value);
-        
         return controller.Problem(
             detail: p.Detail,
             instance: p.Instance,
@@ -28,13 +23,8 @@ public static class ResultActionResults
 
     public static ActionResult<T> ToActionResult<T>(this Result<T> result, ControllerBase controller)
     {
-        if (result.IsSuccess)
-        {
-            return result.Value!;
-        }
-        
+        if (result.IsSuccess) return result.Value!;
         var p = result.ToProblemShape(controller.Request?.Path.Value);
-        
         return controller.Problem(
             detail: p.Detail,
             instance: p.Instance,

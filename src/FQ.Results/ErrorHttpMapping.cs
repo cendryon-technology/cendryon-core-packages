@@ -15,17 +15,15 @@ public static class ErrorHttpMapping
     /// <returns>The corresponding HTTP status code.</returns>
     public static HttpStatusCode ToStatusCode(this Error error) => error.Type switch
     {
-        ErrorType.Validation or ErrorType.BadRequest       => HttpStatusCode.BadRequest,           // 400
-        ErrorType.Unauthorized                             => HttpStatusCode.Unauthorized,         // 401
-        ErrorType.Forbidden                                => HttpStatusCode.Forbidden,            // 403
-        ErrorType.NotFound                                 => HttpStatusCode.NotFound,             // 404
-        ErrorType.Conflict                                 => HttpStatusCode.Conflict,             // 409
-        ErrorType.TooManyRequests                          => (HttpStatusCode)429,
-        ErrorType.Unprocessable                            => (HttpStatusCode)422,
-        ErrorType.BadGateway                               => HttpStatusCode.BadGateway,           // 502
-        ErrorType.UpstreamUnavailable                      => HttpStatusCode.ServiceUnavailable,   // 503
-        ErrorType.GatewayTimeout                           => HttpStatusCode.GatewayTimeout,       // 504
-        ErrorType.Internal or _                            => HttpStatusCode.InternalServerError,  // 500 default
+        ErrorType.Validation => HttpStatusCode.BadRequest,
+        ErrorType.NotFound => HttpStatusCode.NotFound,
+        ErrorType.Conflict => HttpStatusCode.Conflict,
+        ErrorType.Unauthorized => HttpStatusCode.Unauthorized,
+        ErrorType.Forbidden => HttpStatusCode.Forbidden,
+        ErrorType.PreconditionFailed => HttpStatusCode.PreconditionFailed,
+        ErrorType.TooManyRequests => (HttpStatusCode)429,
+        ErrorType.Concurrency => HttpStatusCode.Conflict,
+        _ => HttpStatusCode.BadRequest
     };
 
     /// <summary>
@@ -38,7 +36,6 @@ public static class ErrorHttpMapping
     {
         var status = (int)error.ToStatusCode();
         var errors = Validation.TryExtractFieldMap(error);
-        
         return new ProblemShape(
             Title: error.Type.ToString(),
             Status: status,

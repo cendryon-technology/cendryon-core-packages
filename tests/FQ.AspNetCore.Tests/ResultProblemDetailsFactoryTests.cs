@@ -1,10 +1,9 @@
 using FluentAssertions;
+using FQ.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Options;
-
-namespace FQ.AspNetCore.Tests;
 
 public class ResultProblemDetailsFactoryTests
 {
@@ -18,7 +17,7 @@ public class ResultProblemDetailsFactoryTests
     public void CreateProblemDetails_Fills_Defaults()
     {
         var factory = CreateFactory();
-        var pd = factory.CreateProblemDetails(httpContext: null!, statusCode: 422, detail: "oops");
+        var pd = factory.CreateProblemDetails(httpContext: null, statusCode: 422, detail: "oops");
 
         pd.Status.Should().Be(422);
         pd.Title.Should().NotBeNullOrWhiteSpace();

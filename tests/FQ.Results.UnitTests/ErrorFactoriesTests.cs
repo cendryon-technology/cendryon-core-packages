@@ -2,6 +2,7 @@ using FluentAssertions;
 
 namespace FQ.Results.UnitTests;
 
+
 public class ErrorFactoriesTests
 {
     [Fact]
@@ -23,6 +24,6 @@ public class ErrorFactoriesTests
 
         e.Metadata.Should().NotBeNull();
         e.Metadata!.Should().ContainKey("exception");
-        e.Metadata!.Should().ContainKey("stack_trace");
+        e.Metadata!.Should().ContainKey("stack");
     }
 }
