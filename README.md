@@ -1,209 +1,218 @@
-# 🧠 Synq  
-**A next-generation CQRS and pipeline orchestration framework for .NET 9**
+# Futeq Core Packages
 
-> Designed for simplicity, composability, and power.  
-> Inspired by Clean Architecture, MediatR, and Futeq’s internal frameworks.  
-> No dependencies, no magic — just pure, extensible message pipelines.
+A modern, minimal, and production-ready foundation for building **.NET 9** services and APIs —  
+designed around **Clean Architecture**, **CQRS**, and **unified result handling**.
 
----
+This ecosystem includes:
 
-## ✨ Overview
+| Package | Purpose |
+|----------|----------|
+| **FQ.Results** | Uniform success/error result handling, HTTP mapping, and problem-details integration |
+| **FQ.Cqrs** | MediatR pipeline behaviors for CQRS (validation, authorization, idempotency, logging, performance) |
+| **FQ.AspNetCore** | ASP.NET Core utilities (correlation, idempotency, versioning, result mapping) |
+| **FQ.Functions** | Azure Functions utilities (correlation, idempotency, exception handling, result writers) |
+| **FQ.Mapping** | Tiny abstraction over object mapping with first‑class `Result<T>` support |
 
-Synq is a lightweight mediator & pipeline engine built for **command–query responsibility segregation (CQRS)**.  
-It provides a minimal core (dispatch, handlers, filters) and a flexible builder API to wire up your **cross-cutting behaviors**.
-
-```mermaid
-flowchart LR
-    subgraph "Synq Dispatcher"
-        F1["Filters (behaviors)"]
-        F2["Handlers"]
-    end
-    M["Message (IAct / IAsk)"] --> F1 --> F2 --> R["Result"]
-```
-
-Unlike heavy mediators, **Synq** has no reflection scanning or internal DI magic — everything is explicit, testable, and fast.
-
----
-## Support the development
-If you like what you see here, feel free to donate to contribute to our open-source efforts. All donations will be received by the contributing engineers!
-
-<a href="https://www.buymeacoffee.com/futeq" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-green.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
----
-## 🧭 Quick Start TL;DR
-
-```csharp
-services.AddSynq(b => b
-    .ScanHandlers(typeof(Program).Assembly)
-    .AddCommonFilters()
-    .AddCommandFilters()
-    .AddCachingPreset()
-);
-
-var result = await synq.Dispatch(new GetUser(Guid.NewGuid()));
-```
----
-
-## 🧩 Packages
-
-| Package | Description |
-|----------|--------------|
-| **FQ.Synq** | Core abstractions and dispatcher |
-| **FQ.Synq.Filters** | Common cross-cutting filters (validation, auth, perf, etc.) |
-| **FQ.Synq.Filters.Caching** | Caching filters for `IAsk<T>` and invalidation for `IAct` |
-| *(Future)* FQ.Synq.Filters.Messaging | Distributed event bus integration |
+All libraries target **.NET 9** and work with:
+- **MediatR 13.1+**
+- **Microsoft.Azure.Functions.Worker 2.2+**
+- **ASP.NET Core 9.0+**
 
 ---
 
-## 🏗️ Installation
+## 📦 Installation
 
 ```bash
-dotnet add package FQ.Synq
-dotnet add package FQ.Synq.Filters
-dotnet add package FQ.Synq.Filters.Caching
+dotnet add package FQ.Results
+dotnet add package FQ.Cqrs
+dotnet add package FQ.AspNetCore
+dotnet add package FQ.Functions
+dotnet add package FQ.Mapping
 ```
 
 ---
 
-## 🧱 Core Concepts
+## 🧩 FQ.Results
 
-### Messages
-A **message** represents an intent.  
-Two primary kinds:
+Provides lightweight primitives for handling outcomes and errors across your entire stack.
+
+### Result basics
 
 ```csharp
-public interface IAct : IMessage<Nil> { }         // Command - write
-public interface IAct<TOut> : IMessage<TOut> { }  // Command returning a value
-public interface IAsk<TOut> : IMessage<TOut> { }  // Query - read only
+using FQ.Results;
+
+var ok = Result.Ok();
+var user = Result<User>.Ok(new User("alice"));
+var notFound = Result.Fail(Error.NotFound("user_not_found", "User does not exist"));
+```
+
+### Error factory helpers
+
+```csharp
+var e1 = Error.Validation("email", "Invalid format");
+var e2 = Error.Forbidden("no_access", "User has no permission");
+var e3 = Error.Conflict("duplicate", "Email already exists");
+```
+
+### Mapping to HTTP Problem Details
+
+```csharp
+var shape = e1.ToProblemShape("/api/users/1");
+
+Console.WriteLine(shape.Status);  // 400
+Console.WriteLine(shape.Type);    // urn:problem-type:validation
+Console.WriteLine(shape.Detail);  // "Invalid format"
+```
+
+### JSON-friendly model
+
+All result and error types are fully serializable with `System.Text.Json`.
+
+```csharp
+var json = JsonSerializer.Serialize(Result.Fail(Error.NotFound("x", "missing")));
+```
+
+Due to immutability of the record classes, use `FQ.Results.JsonResultSerializer` for deserialization purposes.
+
+```csharp
+var result = JsonResultSerializer.Deserialize<ResultType>(json, _serializerOptions);
 ```
 
 ---
+
+## ⚙️ FQ.Cqrs
+
+Integrates clean CQRS patterns using **MediatR pipeline behaviors** and **Result** semantics.
+
+### CQRS Setup
+
+In your `Startup` or DI registration:
+
+```csharp
+services.AddCqrsUtilities()
+```
 
 ### Handlers
-Handlers process a single message type.
 
 ```csharp
-public sealed record GetUser(Guid Id) : IAsk<UserDto>;
-public sealed class GetUserHandler : IMessageHandler<GetUser, UserDto>
+public sealed record CreateUser(string Email, string Password) : ICommand<Result<Guid>>;
+
+public sealed class CreateUserHandler : IRequestHandler<CreateUser, Result<Guid>>
 {
-    public Task<UserDto> Handle(GetUser message, CancellationToken ct)
+    public async Task<Result<Guid>> Handle(CreateUser cmd, CancellationToken ct)
     {
-        return Task.FromResult(new UserDto(message.Id, "Alice"));
+        if (string.IsNullOrWhiteSpace(cmd.Email))
+            return Result<Guid>.Fail(Error.Validation("email", "Email is required"));
+
+        var id = Guid.NewGuid();
+        return Result<Guid>.Ok(id);
+    }
+}
+```
+
+### Authorizers
+
+```csharp
+public sealed class CreateUserAuthorizer : IAuthorizer<CreateUser>
+{
+    public Task<Result> AuthorizeAsync(CreateUser request, CancellationToken ct)
+    {
+        if (request.Email.EndsWith("@futeq.com"))
+            return Task.FromResult(Result.Ok());
+
+        return Task.FromResult(Result.Fail(Error.Forbidden("domain_not_allowed")));
+    }
+}
+```
+
+### Idempotent requests
+
+```csharp
+public sealed record CreateOrder(Guid Id, string Customer)
+    : ICommand<Result<Guid>>, IIdempotentRequest
+{
+    public TimeSpan IdempotencyTtl => TimeSpan.FromMinutes(5);
+}
+```
+
+---
+
+## 🌐 FQ.AspNetCore
+
+Utilities for ASP.NET Core 9.0 projects — standardized middleware and extensions.
+
+### Register services
+
+```csharp
+builder.Services.AddAspNetCoreUtilities();
+app.UseAspNetCoreUtilities();
+```
+
+### Controller helpers
+
+```csharp
+[HttpPost("users")]
+public IActionResult Create([FromBody] CreateUser command)
+{
+    var result = _mediator.Send(command).Result;
+    return result.ToActionResult(this);
+}
+```
+
+---
+
+## ☁️ FQ.Functions
+
+Azure Functions isolated worker helpers.
+
+### Configure
+
+```csharp
+var host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults(builder =>
+    {
+        builder.UseFunctionsUtilities();
+    })
+    .ConfigureServices(services =>
+    {
+        services.AddFunctionsUtilities();
+    })
+    .Build();
+
+host.Run();
+```
+
+### Usage
+
+```csharp
+public class UsersFunctions
+{
+    [Function("GetUser")]
+    public async Task<HttpResponseData> GetUser(
+        [HttpTrigger(AuthorizationLevel.Function, "get", Route = "users/{id}")] HttpRequestData req, string id)
+    {
+        if (id == "404")
+        {
+                return await req.WriteResultAsync(Result.Fail(Error.NotFound("user", "Not found")));
+        }
+
+        return await req.WriteResultAsync(Result.Ok());
     }
 }
 ```
 
 ---
 
-### Dispatcher (ISynq)
-The entry point for executing messages:
+## ✅ Testing
 
-```csharp
-var result = await synq.Dispatch(new GetUser(Guid.NewGuid()));
+All packages have tests (xUnit + FluentAssertions + NSubstitute).
+
+```bash
+dotnet test -c Release
 ```
 
 ---
 
-## ⚙️ Dependency Injection Setup
+## 🧩 License
 
-```csharp
-using FQ.Synq;
-using FQ.Synq.Filters;
-
-builder.Services.AddSynq(b => b
-    .ScanHandlers(typeof(Program).Assembly)
-    .AddWebApiDefaults(includeIdempotency: true)
-);
-```
-
----
-
-## 🔄 Pipelines
-
-Each message runs through a **filter chain**, similar to ASP.NET middleware.
-
-Example pipeline order for commands:
-
-```text
-Validation → Authorization → Idempotency → UnitOfWork → Handler → DomainEvents → CacheInvalidation
-```
-
-Queries:
-
-```text
-Validation → Authorization → QueryCache → Handler
-```
-
----
-
-## 🧩 Writing Custom Filters
-
-Filters implement:
-
-```csharp
-public interface IFilter<TMessage, TOut>
-{
-    Task<TOut> Invoke(TMessage message, CancellationToken ct, Next<TOut> next);
-}
-```
-
-Example logging filter:
-
-```csharp
-public sealed class LoggingFilter<T, TOut> : IFilter<T, TOut>
-    where T : IMessage<TOut>
-{
-    private readonly ILogger<LoggingFilter<T, TOut>> _log;
-
-    public LoggingFilter(ILogger<LoggingFilter<T, TOut>> log)
-    {
-        _log = log;
-    }
-
-    public async Task<TOut> Invoke(T message, CancellationToken ct, Next<TOut> next)
-    {
-        _log.LogInformation("Handling {Message}", typeof(T).Name);
-        var result = await next(ct);
-        _log.LogInformation("Handled {Message}", typeof(T).Name);
-        return result;
-    }
-}
-```
-
----
-
-## ✅ Built-in Filters
-
-| Filter | Description |
-|---------|--------------|
-| **PerformanceFilter** | Logs message duration using `ILogger`. |
-| **ValidationFilter** | Integrates with `FluentValidation` validators. |
-| **AuthorizationFilter** | Executes `IGuard<T>` to enforce authorization logic. |
-| **IdempotencyFilter** | Prevents duplicate command execution (e.g., retries). |
-| **UnitOfWorkFilter** | Wraps commands in a transactional context. |
-| **DomainEventsFilter** | Publishes domain events after commit. |
-| **Caching Filters** | Adds cache get/set for queries and invalidation for commands. |
-
----
-
-## 💾 Caching
-
-```csharp
-using FQ.Synq.Filters.Caching;
-
-builder.Services.AddSynq(b => b
-    .ScanHandlers(typeof(Program).Assembly)
-    .AddCachingPreset()
-);
-builder.Services.AddSingleton<ICacheStore, InMemoryCacheStore>();
-```
-
----
-
-## 🧾 License
-
-MIT License © 2025 Futeq  
-Crafted with ❤️ by Futeq Core Team.
-
-
-
-Welcome to **Synq** — your clean, fast, composable CQRS engine for .NET.
+MIT © 2025 Futeq
