@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup> 
+        <PackageId>Cendryon.Mapping.Mapster</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Futeq s.r.o.</Authors>
+        <Company>Futeq s.r.o.</Company>
+
+        <!-- Descriptive metadata -->
+        <Title>FQ.Mapping.Mapster</Title>
+        <Description>Mapster implementation for FQ.Mapping</Description>
+        <PackageTags>futeq;results;error;mapping;cqrs;clean-architecture</PackageTags>
+        <RepositoryUrl>https://github.com/futeq/futeq-core-packages</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/futeq/futeq-core-packages</PackageProjectUrl>
+        <PackageReadmeFile>FREADME.md</PackageReadmeFile>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageIcon>icon.png</PackageIcon>
+        <RepositoryType>git</RepositoryType>
+
+        <!-- Optional packaging controls -->
+        <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+        <IncludeSymbols>false</IncludeSymbols>
+        <IncludeSource>false</IncludeSource>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mapster" Version="7.4.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Cendryon.Mapping\Cendryon.Mapping.csproj" /> 
+    </ItemGroup>
+    
+    <ItemGroup>
+        <InternalsVisibleTo Include="Cendryon.Mapping.Mapster.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="" />
+        <None Include="../../LICENSE" Pack="true" PackagePath="" />
+        <None Include="../../icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+</Project>
