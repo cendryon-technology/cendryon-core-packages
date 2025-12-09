@@ -1,3 +1,19 @@
+# [1.0.0-alpha.14](https://github.com/cendryon-technology/cendryon-core-packages/compare/v1.0.0-alpha.13...v1.0.0-alpha.14) (2025-12-09)
+
+
+### Bug Fixes
+
+* Adding scoped impl to SynqDispatcher ([36e7a67](https://github.com/cendryon-technology/cendryon-core-packages/commit/36e7a67d7179595de6534768cd93d8c3d0895422))
+* Finish rebranding ([d173d0c](https://github.com/cendryon-technology/cendryon-core-packages/commit/d173d0c750ada526c707d152bb06ca3658fd6496))
+* fixing package metadata and solution file ([e6e2c9f](https://github.com/cendryon-technology/cendryon-core-packages/commit/e6e2c9f9099960475690e5cde4ed15827133de15))
+* fixing release pipeline ([0fedb6c](https://github.com/cendryon-technology/cendryon-core-packages/commit/0fedb6c6814a09b1475f5efe90e3cf7f06e5af26))
+
+
+### Features
+
+* Adding initial package structure ([f3e1a4e](https://github.com/cendryon-technology/cendryon-core-packages/commit/f3e1a4e0fc7193969d537e00e07dcb9bf760d1c1))
+* Renaming to cendryon. Adding extended mapping funcitons ([cba0618](https://github.com/cendryon-technology/cendryon-core-packages/commit/cba06182172dc63af94c84890ead41d5a46e0b75))
+
 # [1.0.0-alpha.13](https://github.com/futeq/futeq-core-packages/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2025-10-29)
 
 
