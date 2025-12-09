@@ -5,21 +5,21 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
          <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-         <RootNamespace>FQ.Results</RootNamespace>
+         <RootNamespace>Cendryon.Results</RootNamespace>
     </PropertyGroup>
     
     <PropertyGroup> 
         <PackageId>Cendryon.Results</PackageId>
         <Version>1.0.0</Version>
-        <Authors>Futeq s.r.o.</Authors>
-        <Company>Futeq s.r.o.</Company>
+        <Authors>Cendryon s.r.o.</Authors>
+        <Company>Cendryon s.r.o.</Company>
 
         <!-- Descriptive metadata -->
         <Title>FQ.Results</Title>
-        <Description>Core result and error primitives for FQ Framework (.NET 9): unified success/error handling, RFC 7807 mapping, JSON-friendly design.</Description>
-        <PackageTags>futeq;results;error;problem-details;cqrs;clean-architecture</PackageTags>
-        <RepositoryUrl>https://github.com/futeq/futeq-core-packages</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/futeq/futeq-core-packages</PackageProjectUrl>
+        <Description>Core result and error primitives: unified success/error handling, RFC 7807 mapping, JSON-friendly design.</Description>
+        <PackageTags>Cendryon;results;error;problem-details;cqrs;clean-architecture</PackageTags>
+        <RepositoryUrl>https://github.com/cendryon-technology/cendryon-core-packages</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/cendryon-technology/cendryon-core-packages</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageIcon>icon.png</PackageIcon>

@@ -9,16 +9,16 @@
     <PropertyGroup> 
         <PackageId>Cendryon.Mapping.Mapster</PackageId>
         <Version>1.0.0</Version>
-        <Authors>Futeq s.r.o.</Authors>
-        <Company>Futeq s.r.o.</Company>
+        <Authors>Cendryon s.r.o.</Authors>
+        <Company>Cendryon s.r.o.</Company>
 
         <!-- Descriptive metadata -->
-        <Title>FQ.Mapping.Mapster</Title>
-        <Description>Mapster implementation for FQ.Mapping</Description>
-        <PackageTags>futeq;results;error;mapping;cqrs;clean-architecture</PackageTags>
-        <RepositoryUrl>https://github.com/futeq/futeq-core-packages</RepositoryUrl>
-        <PackageProjectUrl>https://github.com/futeq/futeq-core-packages</PackageProjectUrl>
-        <PackageReadmeFile>FREADME.md</PackageReadmeFile>
+        <Title>Cendryon.Mapping.Mapster</Title>
+        <Description>Mapster implementation for Cendryon.Mapping</Description>
+        <PackageTags>Cendryon;results;error;mapping;cqrs;clean-architecture</PackageTags>
+        <RepositoryUrl>https://github.com/cendryon-technology/cendryon-core-packages</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/cendryon/cendryon-core-packages</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageIcon>icon.png</PackageIcon>
         <RepositoryType>git</RepositoryType>
