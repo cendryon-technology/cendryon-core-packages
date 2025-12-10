@@ -14,7 +14,7 @@ This ecosystem includes:
 
 
 All libraries target **.NET 10** and work with: 
-- **Microsoft.Azure.Functions.Worker 2.2+**
+- **Microsoft.Azure.Functions.Worker**
 - **ASP.NET Core 10.0+**
 
 
