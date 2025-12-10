@@ -1,3 +1,10 @@
+# [1.0.0-alpha.15](https://github.com/cendryon-technology/cendryon-core-packages/compare/v1.0.0-alpha.14...v1.0.0-alpha.15) (2025-12-10)
+
+
+### Features
+
+* bumping version for build triggering ([341e71c](https://github.com/cendryon-technology/cendryon-core-packages/commit/341e71c23b864a55753f4e679746dd39b3124da0))
+
 # [1.0.0-alpha.14](https://github.com/cendryon-technology/cendryon-core-packages/compare/v1.0.0-alpha.13...v1.0.0-alpha.14) (2025-12-09)
 
 
